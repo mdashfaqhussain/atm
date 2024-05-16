@@ -27,8 +27,8 @@ public class WithdrawalTest {
         assertTrue(output.contains("Withdrawal successful."));
     }
 
-    @Test(expected = DenominationUnavailableException.class)
-    public void testInsufficientFunds() throws InsufficientFundsException, DenominationUnavailableException {
+    @Test(expected = InsufficientFundsException.class)
+    public void testDenominationUnavailableException() throws InsufficientFundsException, DenominationUnavailableException {
         ATM atm = new ATM();
         int amount = 15000000;
         Withdrawal withdrawal = new Withdrawal(amount, atm.getDenominations(), atm.getLock());
@@ -42,4 +42,20 @@ public class WithdrawalTest {
         Withdrawal withdrawal = new Withdrawal(amount, atm.getDenominations(), atm.getLock());
         withdrawal.execute();
     }
+
+    @Test(expected = InsufficientFundsException.class)
+    public void testInsufficientFundsException() throws InsufficientFundsException, DenominationUnavailableException {
+        ATM atm = new ATM();
+        // Set up an ATM with a low balance (less than the withdrawal amount)
+        HashMap<Denomination, Integer> denominations = atm.getDenominations();
+        denominations.put(Denomination.HUNDRED, 1); // Assume there is only one hundred in the ATM
+        denominations.put(Denomination.TWO_HUNDRED, 0); // Assume there are no two hundreds in the ATM
+        denominations.put(Denomination.FIVE_HUNDRED, 0); // Assume there are no five hundreds in the ATM
+
+        int amount = 500; // Assuming the total balance is less than 500
+        Withdrawal withdrawal = new Withdrawal(amount, denominations, atm.getLock());
+        withdrawal.execute();
+    }
+
+
 }
