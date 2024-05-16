@@ -7,6 +7,10 @@ import java.util.HashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class ATM {
+    public HashMap<Denomination, Integer> getDenominations() {
+        return denominations;
+    }
+
     private HashMap<Denomination, Integer> denominations;
     private final ReentrantLock lock;
 
