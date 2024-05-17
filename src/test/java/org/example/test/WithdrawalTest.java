@@ -121,42 +121,61 @@ public class WithdrawalTest {
      *
      * @throws InterruptedException if the current thread is interrupted while waiting
      */
-        @Test
-        public void testConcurrentWithdrawals() throws InterruptedException {
-            final int numberOfThreads = 2;
-            final int amountPerThread = 500;
+    @Test
+    public void testConcurrentWithdrawals() throws InterruptedException {
+        final int numberOfThreads = 3;
+        final int amountPerThread = 500;
 
-            ATM atm = new ATM();
-            printDenominationCounts(atm);
+        ATM atm = new ATM();
+        printDenominationCounts(atm);
 
-            List<Thread> threads = new ArrayList<>();
-            CountDownLatch latch = new CountDownLatch(numberOfThreads);
+        // Print initial total balance
+        int initialTotalBalance = calculateTotalBalance(atm.getDenominations());
+        System.out.println("Initial total balance: " + initialTotalBalance);
 
-            IntStream.range(0, numberOfThreads)
-                    .mapToObj(i -> new Thread(() -> {
-                        try {
-                            ConcurrencyWithdrawal concurrencyWithdrawal = new ConcurrencyWithdrawal(atm, amountPerThread);
-                            concurrencyWithdrawal.execute();
-                        }
-                        finally {
-                            latch.countDown();
-                        }
-                    }))
-                    .forEach(thread -> {
-                        threads.add(thread);
-                        thread.start();
-                    });
+        List<Thread> threads = new ArrayList<>();
+        CountDownLatch latch = new CountDownLatch(numberOfThreads);
 
-            latch.await();
+        IntStream.range(0, numberOfThreads)
+                .mapToObj(i -> new Thread(() -> {
+                    try {
+                        ConcurrencyWithdrawal concurrencyWithdrawal = new ConcurrencyWithdrawal(atm, amountPerThread);
+                        concurrencyWithdrawal.execute();
+                    } finally {
+                        latch.countDown();
+                    }
+                }))
+                .forEach(thread -> {
+                    threads.add(thread);
+                    thread.start();
+                });
 
+        latch.await();
 
-            printDenominationCounts(atm);
+        // Print remaining total balance after withdrawals
+        int remainingTotalBalance = calculateTotalBalance(atm.getDenominations());
+        System.out.println("Remaining total balance: " + remainingTotalBalance);
 
-            // Assert the final state of the ATM after concurrent withdrawals
-            assertTrue(atm.getDenominations().get(Denomination.HUNDRED) >= 0);
-            assertTrue(atm.getDenominations().get(Denomination.TWO_HUNDRED) >= 0);
-            assertTrue(atm.getDenominations().get(Denomination.FIVE_HUNDRED) >= 0);
-        }
+        printDenominationCounts(atm);
+
+        // Assert the final state of the ATM after concurrent withdrawals
+        assertTrue(atm.getDenominations().get(Denomination.HUNDRED) >= 0);
+        assertTrue(atm.getDenominations().get(Denomination.TWO_HUNDRED) >= 0);
+        assertTrue(atm.getDenominations().get(Denomination.FIVE_HUNDRED) >= 0);
+    }
+
+    /**
+     * Calculates the total balance of the ATM based on the current denomination counts.
+     *
+     * @param denominations the denomination counts in the ATM
+     * @return the total balance of the ATM
+     */
+    private int calculateTotalBalance(ConcurrentHashMap<Denomination, Integer> denominations) {
+        return denominations.entrySet().stream()
+                .mapToInt(entry -> entry.getKey().getValue() * entry.getValue())
+                .sum();
+    }
+
 
     /**
      * Prints the current denomination counts of the ATM.
