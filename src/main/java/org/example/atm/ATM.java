@@ -1,6 +1,7 @@
 package org.example.atm;
 
 import org.example.constant.ProjectConstants;
+import org.example.exception.AmountNegativeException;
 import org.example.exception.DenominationUnavailableException;
 import org.example.exception.InsufficientFundsException;
 
@@ -8,10 +9,17 @@ import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.ReentrantLock;
 
+
+/**
+ * Represents an Automated Teller Machine (ATM) that manages the dispensing of money.
+ * <p>
+ * The ATM class provides functionality for withdrawing money from the ATM. It maintains the counts of different
+ * denominations of currency available in the ATM and ensures thread-safe access to withdrawal operations.
+ */
 public class ATM {
+
+
     private final ConcurrentHashMap<Denomination, Integer> denominations;
     private final ReentrantLock lock;
 
@@ -39,14 +47,15 @@ public class ATM {
      * Withdraws the specified amount from the ATM.
      *
      * @param amount the amount to withdraw from the ATM
-     * @throws InsufficientFundsException      if the ATM does not have enough funds to fulfill the withdrawal
-     * @throws DenominationUnavailableException if the required denominations for the withdrawal are unavailable in the ATM
+     *
      */
-    public void withdraw(int amount) throws InsufficientFundsException, DenominationUnavailableException {
+    public void withdraw(int amount)  {
         lock.lock();
         try {
             Withdrawal withdrawal = new Withdrawal(amount, denominations);
             withdrawal.execute();
+        } catch (AmountNegativeException | InsufficientFundsException | DenominationUnavailableException e) {
+            System.out.println(e.getMessage());
         } finally {
             lock.unlock();
         }

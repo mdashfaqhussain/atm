@@ -1,10 +1,18 @@
 package org.example;
 
 import org.example.atm.ATM;
-import org.example.atm.ConcurrencyWithdrawal;
+import org.example.atm.Withdrawal;
+import org.example.exception.AmountNegativeException;
+import org.example.exception.DenominationUnavailableException;
+import org.example.exception.InsufficientFundsException;
 
 import java.util.Scanner;
 
+/**
+ * The Main class serves as the entry point for the ATM application.
+ * It initializes the ATM object and starts a loop to continuously prompt the user for input.
+ * Users can choose to withdraw funds or exit the application.
+ */
 public class Main {
 
     /**
@@ -14,7 +22,7 @@ public class Main {
      *
      * @param args The command-line arguments (not used in this application).
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws DenominationUnavailableException, InsufficientFundsException, AmountNegativeException {
         ATM atm = new ATM();
         Scanner scanner = new Scanner(System.in);
 
@@ -26,7 +34,7 @@ public class Main {
             switch (choice) {
                 case 1:
                     int withdrawAmount = getPositiveInput(scanner, "Enter amount to withdraw (positive integer):");
-                    ConcurrencyWithdrawal withdrawal = new ConcurrencyWithdrawal(atm, withdrawAmount);
+                    Withdrawal withdrawal = new Withdrawal(withdrawAmount, atm.getDenominations());
                     withdrawal.execute();
                     break;
                 case 2:
@@ -38,26 +46,17 @@ public class Main {
         }
     }
 
-    /**
-     * Prompts the user for a positive integer input using the provided scanner.
-     *
-     * @param scanner the Scanner object to read input from
-     * @param message the message to display prompting the user for input
-     * @return the positive integer input provided by the user
-     */
-    private static int getPositiveInput(Scanner scanner, String message) {
-        int input = 0;
-        boolean validInput = false;
-
-        while (!validInput) {
-            System.out.println(message);
-            input = scanner.nextInt();
-            if (input > 0) {
-                validInput = true;
-            } else {
-                System.out.println("Invalid amount. Please enter a positive integer.");
+    // Helper method to get positive input from the user
+    private static int getPositiveInput(Scanner scanner, String prompt) {
+        int input;
+        do {
+            System.out.println(prompt);
+            while (!scanner.hasNextInt()) {
+                System.out.println("Please enter a valid positive integer:");
+                scanner.next();
             }
-        }
+            input = scanner.nextInt();
+        } while (input <= 0);
         return input;
     }
 
