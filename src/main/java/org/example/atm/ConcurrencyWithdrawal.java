@@ -1,5 +1,6 @@
 package org.example.atm;
 
+import org.example.constant.ProjectConstants;
 import org.example.exception.DenominationUnavailableException;
 import org.example.exception.InsufficientFundsException;
 
@@ -16,7 +17,7 @@ public class ConcurrencyWithdrawal {
     public ConcurrencyWithdrawal(ATM atm, int amount) {
         this.atm = atm;
         this.amount = amount;
-        this.executor = Executors.newFixedThreadPool(10);
+        this.executor = Executors.newFixedThreadPool(ProjectConstants.THREAD_POOL_SIZE);
         this.lock = atm.getLock();
     }
 
@@ -27,12 +28,17 @@ public class ConcurrencyWithdrawal {
      * it catches the exception and prints the error message.
      */
     public void execute() {
-        executor.submit(() -> {
-            try {
-                atm.withdraw(amount);
-            } catch (InsufficientFundsException | DenominationUnavailableException e) {
-                System.out.println(e.getMessage());
-            }
-        });
+        executor.submit(this::executeWithdrawal);
+    }
+
+    /**
+     * Helper method to execute withdrawal.
+     */
+    private void executeWithdrawal() {
+        try {
+            atm.withdraw(amount);
+        } catch (InsufficientFundsException | DenominationUnavailableException e) {
+            System.out.println(e.getMessage());
+        }
     }
 }

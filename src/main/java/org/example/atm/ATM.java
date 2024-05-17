@@ -1,17 +1,19 @@
 package org.example.atm;
 
+import org.example.constant.ProjectConstants;
 import org.example.exception.DenominationUnavailableException;
 import org.example.exception.InsufficientFundsException;
 
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class ATM {
 
 
-    private HashMap<Denomination, Integer> denominations;
+    private ConcurrentHashMap<Denomination, Integer> denominations;
 
-    public HashMap<Denomination, Integer> getDenominations() {
+    public ConcurrentHashMap<Denomination, Integer> getDenominations() {
         return denominations;
     }
     private final ReentrantLock lock;
@@ -28,11 +30,15 @@ public class ATM {
      * It also initializes a reentrant lock to handle concurrency for withdrawal operations.
      */
     public ATM() {
-        this.denominations = new HashMap<>();
-        this.denominations.put(Denomination.HUNDRED, 10);
-        this.denominations.put(Denomination.TWO_HUNDRED, 5);
-        this.denominations.put(Denomination.FIVE_HUNDRED, 2);
+        this.denominations = new ConcurrentHashMap<>();
+        initializeDenominations();
         this.lock = new ReentrantLock();
+    }
+
+    private void initializeDenominations(){
+        this.denominations.put(Denomination.HUNDRED, ProjectConstants.INITIAL_HUNDRED_NOTES);
+        this.denominations.put(Denomination.TWO_HUNDRED, ProjectConstants.INITIAL_TWO_HUNDRED_NOTES);
+        this.denominations.put(Denomination.FIVE_HUNDRED, ProjectConstants.INITIAL_FIVE_HUNDRED_NOTES);
     }
 
     /**
