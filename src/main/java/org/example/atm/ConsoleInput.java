@@ -3,7 +3,7 @@ package org.example.atm;
 import java.util.Scanner;
 
 public class ConsoleInput {
-    private Scanner scanner;
+    private final Scanner scanner;
 
     public ConsoleInput() {
         scanner = new Scanner(System.in);

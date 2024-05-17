@@ -11,30 +11,23 @@ import java.util.concurrent.locks.ReentrantLock;
 public class ConcurrencyWithdrawal {
     private final ATM atm;
     private final int amount;
-    private final ExecutorService executor;
-    private final ReentrantLock lock;
 
     public ConcurrencyWithdrawal(ATM atm, int amount) {
         this.atm = atm;
         this.amount = amount;
-        this.executor = Executors.newFixedThreadPool(ProjectConstants.THREAD_POOL_SIZE);
-        this.lock = atm.getLock();
     }
 
     /**
-     * Submits a withdrawal task to the executor service for asynchronous execution.
-     * This method attempts to withdraw the specified amount from the ATM in a separate thread.
-     * If the withdrawal fails due to insufficient funds or unavailable denominations,
-     * it catches the exception and prints the error message.
+     * Executes a withdrawal operation from the ATM.
+     * <p>
+     * This method initiates a withdrawal operation from the ATM by invoking the `withdraw` method on the ATM instance.
+     * It catches InsufficientFundsException and DenominationUnavailableException if they occur during the withdrawal
+     * process and prints their error messages to the console.
+     * <p>
+     * Note: This method is responsible for handling exceptions related to insufficient funds or unavailable denominations
+     * during the withdrawal process and communicates these errors to the user by printing their error messages to the console.
      */
     public void execute() {
-        executor.submit(this::executeWithdrawal);
-    }
-
-    /**
-     * Helper method to execute withdrawal.
-     */
-    private void executeWithdrawal() {
         try {
             atm.withdraw(amount);
         } catch (InsufficientFundsException | DenominationUnavailableException e) {
